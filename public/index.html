@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>RFID Demo</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body style="height:100vh;overflow-y:scroll;">
+        <div class="container" style="height:100%;">
+                <h3>RFID Client</h3>
+                <h5 id="connected"></h5>
+                <hr/>
+                <div class="row" style="height:40%;">
+                        <div class="col-xs-6" id="in_status"></div>
+                        <div class="col-xs-6" id="out_status"></div>
+                </div>
+                <hr/>
+                <div class="row" style="height:35%;overflow-y:scroll;">
+                        <div class="col-xs-12" id="scan"></div>
+                </div>
+        </div>
+         <script src="/jquery/dist/jquery.js"></script>
+        <script src="/socket.io-client/dist/socket.io.js"></script>
+    </body>
+    <script>
+       console.log('init');
+       var socket = io.connect('http://localhost:3000');
+        socket.on('connect', function(data) {
+                console.log('connect');
+                socket.emit('join', 'Hello World from client');
+                $('#connected').html('<span style="color:#00FF00">Connected</span>');
+        });
+
+        socket.on('disconnect',function(data){
+                $('#connected').html('<span style="color:#FF0000">Disconnected</span>');
+        });
+
+        socket.on('connect-failed',function(data){
+                $('#connected').html('<span style="color:#000000">Connect Failed</span>');
+        });
+
+        socket.on('error',function(data){
+                $('#connected').html('<span style="color:#000000">Error</span>');
+        });
+        socket.on('messages', function(data) {
+                $('#scan').prepend('<p>'+data+'</p>');
+        });
+
+        socket.on('in_status',function(data){
+                $('#in_status').html('');
+                var data = JSON.parse(data);
+                for(var index=0;index<data.length;index++){
+                        $('#in_status').append('<p style="color:#00FF00">'+data[index].id+' - '+data[index].duration+' sec</p>');
+                }
+                //$('#in_status').html('<p style="color:#00ff00">'+data+'</p>');
+        });
+        socket.on('out_status',function(data){
+                $('#out_status').html('');
+                var data = JSON.parse(data);
+                for(var index=0;index<data.length;index++){
+                        $('#out_status').append('<p style="color:#FF0000">'+data[index].id+' - '+data[index].duration+' sec</p>');
+                }
+                //$('#out_status').html('<p style="color:#ff0000">'+data+'</p>');
+        });
+    </script>
+</html>
